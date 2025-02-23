@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en"> 
+ <head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Weather App</title> 
+  <link rel="stylesheet" href="weather.css"> 
+ <style type="text/css" id="dcoder_stylesheet">/* 2 to 10 body format and styling*/
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f8ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+/* 11 to 18 weather container format and styling*/
+.weather-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+/*20 to 22 color ng header 1*/
+h1 {
+    color: #333;
+}
+/* 24 to 30input format and styling*/
+input {
+    padding: 10px;
+    width: 80%;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+/* 31 to 39 button format and styling*/
+button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+/* 40 to 43 pinapakitang interactive yung button and color ng button */
+button:hover {
+    background-color: #45a049;
+}
+/* 44 to 53 format and styling ng weather result and timezone*/
+#weatherResult {
+    display: none;
+    margin-top: 20px;
+}
+#weatherResult p {
+    font-size: 16px;
+    color: #333;
+}</style></head> 
+ <body> 
+  <div class="weather-container"> 
+   <h1>Weather App</h1> 
+   <input type="text" id="cityInput" placeholder="Enter city name"> <button id="getWeatherButton">Get Weather</button> 
+   <div id="weatherResult"> 
+    <h2 id="cityName"></h2> 
+    <p id="weatherDescription"></p> 
+    <p id="temperature"></p> 
+    <p id="humidity"></p> 
+    <p id="windSpeed"></p> 
+    <p id="localTime"></p> 
+   </div> 
+  </div> 
+  <script src="weather.js"></script> 
+ 
+<script type="text/javascript" id="dcoder_script">// 2 to 3 yung API KEY
+const apiKey = 'e7704bc895b4a8d2dfd4a29d404285b6'; 
+const timeZoneApiKey = 'KWA8O4Y5R7WF'; // 
+
+// 6 to 15 para ma access yung element ng html id at ma display yung local time
+const weatherButton = document.getElementById('getWeatherButton');
+const cityInput = document.getElementById('cityInput');
+const weatherResult = document.getElementById('weatherResult');
+const cityName = document.getElementById('cityName');
+const weatherDescription = document.getElementById('weatherDescription');
+const temperature = document.getElementById('temperature');
+const humidity = document.getElementById('humidity');
+const windSpeed = document.getElementById('windSpeed');
+const localTime = document.createElement('p');
+weatherResult.appendChild(localTime);
+
+// 18 to 33 kapag naglagay ng tamang name ng city lalabas yung information
+weatherButton.addEventListener('click', () => {
+    const city = cityInput.value.trim();
+
+    if (city) {
+        fetchWeather(city);
+    } else {
+        alert('Please enter a city name');
+    }
+});
+
+async function fetchWeather(city) {
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+    
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        // 36 to 49 mag nonotify ng error kapag mali nilagay na city yung city 
+        if (data.cod === '404') {
+            alert('City not found');
+        } else {
+            cityName.textContent = `${data.name}, ${data.sys.country}`;
+            weatherDescription.textContent = `Weather: ${data.weather[0].description}`;
+            temperature.textContent = `Temperature: ${data.main.temp}°C`;
+            humidity.textContent = `Humidity: ${data.main.humidity}%`;
+            windSpeed.textContent = `Wind Speed: ${data.wind.speed} m/s`;
+
+            weatherResult.style.display = 'block';
+            fetchTimeZone(data.coord.lat, data.coord.lon);
+        }
+    } catch (error) {
+        alert('Error fetching weather data. Please try again later.');
+    }
+}
+// 53 to 58 pinapakita yung timezone
+async function fetchTimeZone(lat, lon) {
+    const timeZoneUrl = `https://api.timezonedb.com/v2.1/get-time-zone?key=${timeZoneApiKey}&format=json&by=position&lat=${lat}&lng=${lon}`;
+    
+    try {
+        const response = await fetch(timeZoneUrl);
+        const data = await response.json();
+        
+        if (data.status === 'OK') {
+            localTime.textContent = `Local Time: ${data.formatted}`;
+        } 
+        // 64 to 68 kapag nagkaroon ng error sa api request 
+        else {
+            localTime.textContent = 'Local time not available';
+        }
+    } catch (error) {
+        localTime.textContent = 'Error fetching local time';
+    }
+}</script></body></html>
